@@ -1,0 +1,213 @@
+version: '3'
+services:
+
+## Router
+  mongorouter:
+    image: mongo
+    container_name: mongorouter
+    command: mongos --configdb configserver/192.168.100.85:27019,192.168.100.85:27020,192.168.100.85:27021 --bind_ip 0.0.0.0 --port 27017
+    ports:
+      - 27018:27017
+    cpus: '0.5'
+    mem_limit: 256m
+    networks:
+      - proyecto
+
+## Config Servers
+  configsvr1:
+    image: mongo
+    container_name: configsvr1 
+    command: mongod --configsvr --replSet configserver --port 27017 --dbpath /data/db
+    volumes:
+      - ./data/configsvr1:/data/db
+    ports:
+      - 27019:27017
+    links:
+      - master1
+      - master2
+    cpus: '0.5'
+    mem_limit: 256m
+    networks:
+      - proyecto
+
+  configsvr2:
+    image: mongo
+    container_name: configsvr2 
+    command: mongod --configsvr --replSet configserver --port 27017 --dbpath /data/db
+    volumes:
+      - ./data/configsvr2:/data/db
+    ports:
+      - 27020:27017
+    links:
+      - configsvr1
+    cpus: '0.5'
+    mem_limit: 256m
+    networks:
+      - proyecto
+
+  configsvr3:
+    image: mongo
+    container_name: configsvr3
+    command: mongod --configsvr --replSet configserver --port 27017 --dbpath /data/db
+    volumes:
+      - ./data/configsvr3:/data/db
+    ports:
+      - 27021:27017
+    links:
+      - configsvr2
+    cpus: '0.5'
+    mem_limit: 256m
+    networks:
+      - proyecto
+
+## Shards
+  ## Shards 01
+   
+  master1:
+    image: mongo
+    container_name: master1
+    command: mongod --port 27017 --shardsvr --replSet master1rs --dbpath /data/db
+    volumes:
+      - ./data/master1:/data/db
+    ports:
+      - 27030:27017
+    links:
+      - esc1a
+      - esc1b
+    cpus: '0.5'
+    mem_limit: 256m
+    networks:
+      - proyecto
+
+  esc1a:
+    image: mongo
+    container_name: esc1a
+    command: mongod --port 27017 --shardsvr --replSet master1rs --dbpath /data/db
+    volumes:
+      - ./data/esc1a:/data/db
+    ports:
+      - 27031:27017
+    cpus: '0.5'
+    mem_limit: 256m
+    networks:
+      - proyecto
+
+  esc1b:
+    image: mongo
+    container_name: esc1b
+    command: mongod --port 27017 --shardsvr --replSet master1rs --dbpath /data/db
+    volumes:
+      - ./data/esc1b:/data/db
+    ports:
+      - 27032:27017
+    cpus: '0.5'
+    mem_limit: 256m
+    networks:
+      - proyecto
+
+  ## Shards 02
+  master2:
+    image: mongo
+    container_name: master2
+    command: mongod --port 27017 --shardsvr --replSet master2rs --dbpath /data/db
+    volumes:
+      - ./data/master2:/data/db
+    ports:
+      - 27040:27017
+    links:
+      - esc2a
+      - esc2b
+    cpus: '0.5'
+    mem_limit: 256m
+    networks:
+      - proyecto
+
+  esc2a:
+    image: mongo
+    container_name: esc2a
+    command: mongod --port 27017 --shardsvr --replSet master2rs --dbpath /data/db
+    volumes:
+      - ./data/esc2a:/data/db
+    ports:
+      - 27041:27017
+    cpus: '0.5'
+    mem_limit: 256m
+    networks:
+      - proyecto
+
+  esc2b:
+    image: mongo
+    container_name: esc2b
+    command: mongod --port 27017 --shardsvr --replSet master2rs --dbpath /data/db
+    volumes:
+      - ./data/esc2b:/data/db
+    ports:
+      - 27042:27017
+    cpus: '0.5'
+    mem_limit: 256m
+    networks:
+      - proyecto
+  
+  ##/*/*/*/*/*/*/*/*/**/*/*/*/*/*//*/*/*/*/*/**/*/*/*/*/*/*/*/*/*/*/*//*/**//***/
+
+  ## Shards DERECHO 03
+  master3:
+    image: mongo
+    container_name: master3
+    command: mongod --port 27017 --shardsvr --replSet master3rs --dbpath /data/db
+    volumes:
+      - ./data/master3:/data/db
+    ports:
+      - 27050:27017
+    links:
+      - esc3a
+      - esc3b
+    cpus: '0.5'
+    mem_limit: 256m
+    networks:
+      - proyectoI
+
+  esc3a:
+    image: mongo
+    container_name: esc3a
+    command: mongod --port 27017 --shardsvr --replSet master3rs --dbpath /data/db
+    volumes:
+      - ./data/esc3a:/data/db
+    ports:
+      - 27051:27017
+    cpus: '0.5'
+    mem_limit: 256m
+    networks:
+      - proyectoI
+
+  esc3b:
+    image: mongo
+    container_name: esc3b
+    command: mongod --port 27017 --shardsvr --replSet master3rs --dbpath /data/db
+    volumes:
+      - ./data/esc3b:/data/db
+    ports:
+      - 27052:27017
+    cpus: '0.5'
+    mem_limit: 256m
+    networks:
+      - proyectoI
+  
+networks:
+  proyecto:
+  proyectoI:
+
+volumes:
+  configsvr1: {}
+  configsvr2: {}
+  configsvr3: {}
+  master1: {}
+  esc1a: {}
+  esc1b: {}
+  master2: {}
+  esc2a: {}
+  esc2b: {}
+
+  master3: {}
+  esc3a: {}
+  esc3b: {}
